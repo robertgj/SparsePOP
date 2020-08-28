@@ -152,7 +152,9 @@ while controlSW == 1
             % columns
             toBecheckedColumns = toBecheckedColumns(nzColumns);
             % Apply the LU factorization
-			%
+			if exist('OCTAVE_VERSION','builtin')
+              [L,U,PVect,Q] = lu(U, 'vector');
+            else
 			% 2012-01-11 H.Waki
 			% lu(mat, 'vector') is not implemented in 7.3 or earlier. 
 			if exist('verLessThan') ~= 2
@@ -166,6 +168,7 @@ while controlSW == 1
 			else
 				[L,U,PVect] = lu(U,'vector');
 			end
+            end
             %->
             if debugSW == 1
                 fprintf('Apply the LU factorization to update the candidate column indices of linearly independent columns; U = \n');

@@ -2041,6 +2041,9 @@ void get_allsups(int dim, class poly_info & polyinfo_obj, int stsize, vector<cla
                     + bassinfo_st[infolist[k]].sup.vap_size * polyinfo_st[infolist[k]].sup.pnz_size;
             numele += polyinfo_st[infolist[k]].sup.pnz_size * bassinfo_st[infolist[k]].sup.pnz_size;
             k++;
+            if(k == stsize){
+              break;
+            }
 		cVec = InfoTable[k];
         }
         int bpsize, bvsize;
@@ -2073,6 +2076,9 @@ void get_allsups(int dim, class poly_info & polyinfo_obj, int stsize, vector<cla
 		minkovsum(polyinfo_st[infolist[k]].sup, bassinfo_st[infolist[k]].sup, minsups);
 		pushsups(minsups, allsups);
 		k++;
+          if(k == stsize){
+            break;
+          }
 		cVec = InfoTable[k];
 	}
         

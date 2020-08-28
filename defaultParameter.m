@@ -461,9 +461,17 @@ end
 
 if ~isfield(param,'symbolicMath')
 	%   Default:
-	A = ver('Symbolic');
+  if exist('OCTAVE_VERSION','builtin')
+    pkg_id = 'symbolic';
+    pkg_name = pkg_id;
+  else
+    pkg_id = 'Symbolic';
+    pkg_name = 'Symbolic Math Toolbox';
+  end
+  
+  A = ver(pkg_id);
 	if ~isempty(A)
-		x = strfind(A.Name, 'Symbolic Math Toolbox');
+	x = strfind(A.Name, pkg_name);
 		if ~isempty(x)
 			param.symbolicMath = 1;
 		else

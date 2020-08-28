@@ -189,8 +189,7 @@ listOfTerms = cell(1,noOfEquations);
 eqOrIneq = cell(1,noOfEquations);
 rightValue = cell(1,noOfEquations);
 for i=1:noOfEquations
-    idx = findstr(listOfEquations{i},'=');
-    %equationNames{i}
+    idx = strfind(listOfEquations{i},'=');
     if isempty(idx) || length(idx) ~= 2
         error('## The constaint of ''%s'' should have ''=E='', ''=G='' or ''=L=''.\n## Should check the kind of the constriant and/or the position of '';''. ', equationNames{i});
         %elseif length(idx) > 2
@@ -211,7 +210,7 @@ noOfTerms = size(listOfTerms{objRow},2);
 p = 1;
 temp = [];
 while (p <= noOfTerms) && isempty(temp)
-    temp = findstr(listOfTerms{objRow}{p},'objvar');
+    temp = strfind(listOfTerms{objRow}{p},'objvar');
     if ~isempty(temp)
         objTerm = p;
     end
@@ -354,9 +353,9 @@ end
 if eqTo2ineqSW == 0
     for i=1:noOfEquations
         pointer = i;
-        [statusSW, poly, msg] = convToPolynomial(noOfVariables,varNames,...
+        [statusSW, Poly, msg] = convToPolynomial(noOfVariables,varNames,...
             listOfTerms{i},eqOrIneq{i},rightValue{i});
-        ineqPolySys{i} = poly;
+        ineqPolySys{i} = Poly;
         if statusSW ~= 0
             error('%s## Should check the %d%s constraint.', msg, i, thWord(i));
         end
@@ -372,23 +371,23 @@ else % eqTo2ineqSW == 1
     for i=1:noOfEquations
         if (eqOrIneq{i} == 'G')
             pointer = pointer + 1;
-            [statusSW, poly, msg] = convToPolynomial(noOfVariables,varNames,...
+            [statusSW, Poly, msg] = convToPolynomial(noOfVariables,varNames,...
                 listOfTerms{i},eqOrIneq{i},rightValue{i});
-            ineqPolySys{pointer} = poly;
+            ineqPolySys{pointer} = Poly;
         elseif (eqOrIneq{i} == 'L')
             pointer = pointer + 1;
-            [statusSW, poly, msg] = convToPolynomial(noOfVariables,varNames,...
+            [statusSW, Poly, msg] = convToPolynomial(noOfVariables,varNames,...
                 listOfTerms{i},eqOrIneq{i},rightValue{i});
-            ineqPolySys{pointer} = poly;
+            ineqPolySys{pointer} = Poly;
         else
             pointer = pointer + 1;
-            [statusSW, poly, msg] = convToPolynomial(noOfVariables,varNames,...
+            [statusSW, Poly, msg] = convToPolynomial(noOfVariables,varNames,...
                 listOfTerms{i},'G',rightValue{i});
-            ineqPolySys{pointer} = poly;
+            ineqPolySys{pointer} = Poly;
             pointer = pointer + 1;
-            [statusSW, poly, msg] = convToPolynomial(noOfVariables,varNames,...
+            [statusSW, Poly, msg] = convToPolynomial(noOfVariables,varNames,...
                 listOfTerms{i},'L',rightValue{i}+eqTolerance);
-            ineqPolySys{pointer} = poly;
+            ineqPolySys{pointer} = Poly;
         end
         if statusSW ~= 0
             error('%s## Should check the %d%s constraint.', msg, i, thWord(i));
@@ -407,8 +406,8 @@ for i=1:size(binVarNames,2)
 	tmpL{2} = strcat('-1*',binVarNames{i});
 	tmpE = 'E';
 	tmpR = 0;	
-        [statusSW, poly, msg] = convToPolynomial(noOfVariables,varNames,tmpL,tmpE,tmpR);
-        ineqPolySys{i+noOfEquations} = poly;
+        [statusSW, Poly, msg] = convToPolynomial(noOfVariables,varNames,tmpL,tmpE,tmpR);
+        ineqPolySys{i+noOfEquations} = Poly;
         if statusSW ~= 0
             error('%s## Should check the %d%s constraint.', msg, i, thWord(i+noOfEquations));
         end
@@ -434,7 +433,7 @@ return
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function allStatements = fromFile(fileName)
 fileIDX = fopen(fileName, 'r');
-allStatements = [];
+allStatements = '';
 nextSW = 0;
 while 1
     oneLine = fgetl(fileIDX);
@@ -460,7 +459,7 @@ fclose(fileIDX);
 return
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [nextSW, statements] = fromOneLine(oneLine, nextSW)
-statements = [];
+statements = '';
 if nextSW == 0
     oneLine = deblank(oneLine);
     oneLine = strtrim(oneLine);
@@ -502,7 +501,7 @@ else
             nextSW = 0;
            return 
         end
-        idx = findstr(oneLine, ';');
+        idx = strfind(oneLine, ';');
     end
     if ~isempty(oneLine)
         statements = [statements, oneLine];
@@ -540,13 +539,13 @@ end
 return
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function allStatements = removeWhiteSpaces(fileName, allStatements)
-idx = findstr(allStatements, ';');
+idx = strfind(allStatements, ';');
 if isempty(idx)
     error('## ''%s'' does not have any '';''.', fileName);
 elseif idx(end) ~= length(allStatements)
     error('## '';'' does not exist at the end of the last statement of ''%s''.', fileName);
 end
-NewAllStatements = [];
+NewAllStatements = '';
 sidx = 1;
 for i=1:length(idx)
     eidx = idx(i);
@@ -571,7 +570,7 @@ end
 return
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [varNames, allStatements] = getVarName(fileName, allStatements)
-idx = findstr(allStatements, ';');
+idx = strfind(allStatements, ';');
 if isempty(idx)
     error('## ''%s'' does not have any '';''.', fileName);
 elseif idx(end) ~= length(allStatements)
@@ -621,7 +620,7 @@ return
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [posVarNames, allStatements] = getPosvarName(fileName, allStatements)
 % get the definition of Positive Variables
-idx = findstr(allStatements, ';');
+idx = strfind(allStatements, ';');
 sidx = 1;
 posVarNames = [];
 for i=1:length(idx)
@@ -679,7 +678,7 @@ return
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [binVarNames, allStatements] = getBinaryName(fileName, allStatements)
 % get the definition of Binary Variables
-idx = findstr(allStatements, ';');
+idx = strfind(allStatements, ';');
 sidx = 1;
 binVarNames = [];
 for i=1:length(idx)
@@ -742,7 +741,7 @@ return
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [equationNames, allStatements] = getEquationName(fileName, allStatements)
 % get the definition of Equations
-idx = findstr(allStatements, ';');
+idx = strfind(allStatements, ';');
 if isempty(idx)
     error('## ''%s'' does not have the line of ''Equations''.',fileName); 
 elseif idx(end) ~= length(allStatements)
@@ -778,7 +777,7 @@ return
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [NewEquationNames, listOfEquations, allStatements] = getEquation(fileName, allStatements, equationNames, symbolicMath)
 % get the objective function and all the constraints
-idx = findstr(allStatements, ';');
+idx = strfind(allStatements, ';');
 if isempty(idx)
     error('## ''%s'' does not have the line of ''Equations''.',fileName); 
 elseif idx(end) ~= length(allStatements)
@@ -845,7 +844,7 @@ return
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [lbd, ubd, fixed, allStatements] = getLowerUpper(fileName, allStatements, varNames)
 % get all upper and lower bounds.
-idx = findstr(allStatements, ';');
+idx = strfind(allStatements, ';');
 sidx = 1;
 noOfVariables = size(varNames,2);
 lbd = -1.0e10* ones(1,noOfVariables);
@@ -938,6 +937,9 @@ if symbolicMath == 1
 		%	loca = loca(1) -2; % for objvar
 		%end
 		%oneLine(1:loca)
+      if exist('OCTAVE_VERSION','builtin');
+        tempf = collect(sym(oneLine(1:loca)), 'objvar');
+      else
 		%20180911 H. Waki modified
 		if verLessThan('matlab','9.4')
 			tempf = collect(sym(oneLine(1:loca)), 'objvar');
@@ -945,6 +947,7 @@ if symbolicMath == 1
 			syms objvar
 			tempf = collect(str2sym(oneLine(1:loca)), objvar);
 		end
+      end
 		oneLinetmp = char(vpa(expand(tempf),20));
 		oneLine = strcat(oneLinetmp, oneLine(loca+1:end));
 	end
@@ -1003,7 +1006,7 @@ return
 function objRow = getObeRow(listOfEquations, noOfEquations)
 objRow = [];
 for i=1:noOfEquations
-    temp = findstr(listOfEquations{i},'objvar');
+    temp = strfind(listOfEquations{i},'objvar');
     if isempty(temp) ~= 1
         objRow = [objRow,i];
     end
@@ -1065,7 +1068,7 @@ while ll > 0
     else
         k = k+1;
         ii = 1;
-        SignVec = [];
+        SignVec = '';
         while 1
             if (formerPart(1) == '-') || (formerPart(1) == '+')
                 SignVec(ii) = formerPart(1);
@@ -1079,7 +1082,7 @@ while ll > 0
                 break;
             end
         end
-        minus_num = length(findstr(SignVec, '-'));
+        minus_num = length(strfind(SignVec, '-'));
         if ~isempty(SignVec) && mod(minus_num, 2) == 1
             listOfTerms{k} = '-';
         elseif ~isempty(SignVec) && mod(minus_num, 2) == 0
@@ -1093,7 +1096,7 @@ while ll > 0
         ll = length(formerPart);
         lenOneTerm = length(oneTerm);
         if (lenOneTerm > 0) && ((oneTerm(lenOneTerm) == 'e') || (oneTerm(lenOneTerm) == 'E')) ...
-                && findstr(oneTerm,'.') && (ll > 0) && isempty(findstr(oneTerm,'*'))
+                && strfind(oneTerm,'.') && (ll > 0) && isempty(strfind(oneTerm,'*'))
             signE = formerPart(1);
             if (signE == '+') || (signE == '-')
                 [oneTerm1,formerPart] = strtok(formerPart,'-+;');
@@ -1172,7 +1175,7 @@ end
 while isempty(oneTerm) ~= 1
     [oneVariable,oneTerm] = strtok(oneTerm,'*');
     kk = length(oneVariable);
-    pp = findstr(oneVariable,'^');
+    pp = strfind(oneVariable,'^');
     powerPart = 1;
     if isempty(pp) ~= 1
         powerPart = str2num(oneVariable(pp+1:kk));
@@ -1196,27 +1199,27 @@ while isempty(oneTerm) ~= 1
 end
 return
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [statusSW, poly, msg] = convToPolynomial(noOfVariables,varNames,listOfTerms,...
+function [statusSW, Poly, msg] = convToPolynomial(noOfVariables,varNames,listOfTerms,...
     eqOrIneq,rightValue)
 noOfTerms = size(listOfTerms,2);
 statusSW = 0;
 msg = [];
 if strcmp(eqOrIneq, 'E') || strcmp(eqOrIneq, 'e')
-    poly.typeCone = -1;
+    Poly.typeCone = -1;
 else
-    poly.typeCone = 1;
+    Poly.typeCone = 1;
 end
-poly.sizeCone = 1;
-poly.degree = 0;
-poly.dimVar = noOfVariables;
+Poly.sizeCone = 1;
+Poly.degree = 0;
+Poly.dimVar = noOfVariables;
 if abs(rightValue) > 1.0e-10
-    poly.noTerms = noOfTerms + 1;
-    poly.supports = sparse(1,poly.dimVar);
-    poly.coef = -rightValue;
+    Poly.noTerms = noOfTerms + 1;
+    Poly.supports = sparse(1,Poly.dimVar);
+    Poly.coef = -rightValue;
 else
-    poly.noTerms = noOfTerms;
-    poly.supports = [];
-    poly.coef = [];
+    Poly.noTerms = noOfTerms;
+    Poly.supports = [];
+    Poly.coef = [];
 end
 for p=1:noOfTerms
     oneTerm = listOfTerms{p};
@@ -1224,33 +1227,33 @@ for p=1:noOfTerms
     if statusSW ~= 0
        return 
     end
-    poly.supports = [poly.supports; supportVec];
-    poly.coef = [poly.coef;coef];
+    Poly.supports = [Poly.supports; supportVec];
+    Poly.coef = [Poly.coef;coef];
     %	full(supportVec)
     degree = full(sum(supportVec));
-    poly.degree = max(poly.degree,degree);
+    Poly.degree = max(Poly.degree,degree);
 end
-% poly.degree
+% Poly.degree
 if eqOrIneq == 'L' || eqOrIneq == 'l'
-    poly.coef = - poly.coef;
+    Poly.coef = - Poly.coef;
 end
 
 return
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [lbd]  = posToInEqPolySys(noOfVariables,varNames,oneVariable,lbd)
 
-%poly.typeCone = 1;
-%poly.sizeCone = 1;
-%poly.degree = 1;
-%poly.dimVar = noOfVariables;
-%poly.noTerms = 1;
-%poly.supports = sparse(zeros(1,poly.dimVar));
-%poly.coef = [1];
+%Poly.typeCone = 1;
+%Poly.sizeCone = 1;
+%Poly.degree = 1;
+%Poly.dimVar = noOfVariables;
+%Poly.noTerms = 1;
+%Poly.supports = sparse(zeros(1,Poly.dimVar));
+%Poly.coef = [1];
 
 i = 1;
 while (i <= noOfVariables)    
     if strcmp(oneVariable,varNames{i})
-        %		poly.supports(1,i) = 1;
+        %		Poly.supports(1,i) = 1;
         lbd(i) = max(lbd(i),0);
         break;
         %i = noOfVariables + 1;
