@@ -5,9 +5,9 @@ function [objPoly,ineqPolySys,lbd,ubd] = BroydenTriLS(nDim);
 %   minimize   \sum_{i=1}^n objPoly{i}^2
 %   subject to inequPolySys = []; x_1 >= 0
 % Here
-%   objPoly{1} = (3Å|2x_1)x_1Å|2x_2+1
-%   objPoly{i} = (3Å|2x_i)x_iÅ|x_{iÅ|1}Å| 2x_{i+1}+1 (i=2,...,n-1)
-%   objPoly{n} = (3Å|2x_n)x_nÅ|x_{nÅ|1}+1
+%   objPoly{1} = (3-2x_1)x_1-2x_2+1
+%   objPoly{i} = (3-2x_i)x_i-x_{i-1}- 2x_{i+1}+1 (i=2,...,n-1)
+%   objPoly{n} = (3-2x_n)x_n-x_{n-1}+1
 % 
 % 
 % [] = solveBroydenTri(nDim);
